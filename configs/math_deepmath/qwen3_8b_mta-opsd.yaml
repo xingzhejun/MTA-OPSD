@@ -1,0 +1,106 @@
+method: opsd
+model_path: Qwen/Qwen3-8B
+use_lora: false
+
+learning_rate: 1e-6
+num_epochs: 30
+per_device_batch_size: 8
+group_size: 4
+ppo_mini_batch_size: 16
+max_grad_norm: 0.1
+warmup_steps: 50
+weight_decay: 0.01
+max_train_samples: 60000
+save_steps: 50
+eval_steps: 50
+logging_steps: 5
+rollout_is: token
+rollout_is_threshold: 2.0
+
+max_prompt_length: 2048
+max_completion_length: 4096
+val_max_completion_length: 38912
+actor_max_token_len_per_gpu: 40960
+temperature: 1.0
+top_p: 0.95
+top_k_sampling: 20
+student_enable_thinking: true
+val_enable_thinking: true
+val_do_sample: true
+val_n: 12
+val_temperature: 0.6
+val_top_p: 0.95
+val_top_k: 20
+val_batch_size: 16
+teacher_enable_thinking: true
+
+privileged_text_mode: solution_answer
+
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+
+beta: 0.0
+jsd_token_clip: 0.05
+full_logit_distill: true
+distill_add_tail: true
+top_k_distill: 100
+teacher_mode: fixed
+
+output_dir: /scratch/project_462001383/yifu/projects/MTA-OPSD/outputs/math_deepmath/Qwen3-8B/mta-opsd
+data_dir: /scratch/project_462001383/yifu/resource/datasets
+train_dataset: deepmath_filtered_level7_10
+val_dataset: amc23,aime24,aime25
+use_swanlab: true
+use_wandb: true
+project_name: qwen3_8b
+experiment_name: mta-opsd
+val_before_train: true
+
+opsd_rollout_filter: all  # all | correct | incorrect
+# Fixed partial privileged-information exposure. pi_beta is the retained
+# fraction of GT solution characters; the two random modes are deterministic
+# per problem under pi_crop_seed.
+pi_beta: 1.0
+pi_crop_mode: prefix  # prefix | suffix | random_span | random_chars
+pi_crop_seed: 42
+pi_expose_answer: true  # append "Correct final answer: ..." after the partial solution
+pi_multi_teacher: true
+# Semicolon-separated beta:crop_mode entries. Used when pi_multi_teacher=true.
+pi_teacher_specs: "1.0:prefix;0.5:prefix;0.75:prefix;0.5:suffix;0.75:suffix;0.5:random_span;0.75:random_span"
+# Multi-teacher loss aggregation. teacher_mean preserves the legacy behavior;
+# token_max_distance chooses one teacher per response token using raw distance.
+# entropy_grouped_distance sends different rules for different token-entropy types,
+# where the ratio may be 0.0; then every token uses the rest-group route (majority vote followed
+# by farthest-distance selection with the current settings).
+multi_teacher_aggregation: entropy_grouped_distance
+entropy_router_high_ratio: 0.0
+
+# true: high-entropy tokens use prefix teachers and the rest use suffix teachers.
+# false: both entropy groups choose over the complete, arbitrarily sized teacher pool.
+entropy_router_fixed_teacher_type: false
+# null: no routing; 
+# majority: route both groups within the majority-sign teachers; 
+# minority_high: high entropy uses the minority-sign teachers while
+# low entropy still uses the majority. Voting uses teacher minus student
+# log-probability on the observed response token.
+entropy_router_vote_mode: majority  # null | majority | minority_high
+# Fixed entropy threshold in nats. Mutually exclusive with filter_ratio.
+student_entropy_threshold: null
+# Fraction of valid response tokens excluded within each forward micro-batch.
+student_entropy_filter_ratio: null
+# true: exclude high-entropy tokens; false: exclude low-entropy tokens.
+# Equality is retained in fixed-threshold mode; ratio mode uses exact top-k indices.
+student_entropy_filter_high: false
+
+# Fraction excluded independently for each teacher in each forward micro-batch.
+distance_filter_ratio: null
+# true: exclude highest-distance tokens; false: exclude lowest-distance tokens.
+distance_filter_high: false
+
+# Soft-OR combines normalized entropy and teacher-student distance. When enabled,
+# it replaces the separate entropy/distance filter rules above and excludes this
+# fraction of the lowest Soft-OR scores in each teacher's micro-batch.
+soft_or_filter_enabled: false
+soft_or_filter_ratio: 0.8 # not important when it is disabled
+
+n_gpus_per_node: 4

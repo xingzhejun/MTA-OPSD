@@ -1,0 +1,89 @@
+method: opsd
+model_path: Qwen/Qwen3-4B
+use_lora: false
+
+learning_rate: 1e-6
+num_epochs: 30
+per_device_batch_size: 8
+group_size: 4
+ppo_mini_batch_size: 16
+max_grad_norm: 0.1
+warmup_steps: 50
+weight_decay: 0.01
+max_train_samples: 60000
+save_steps: 50
+eval_steps: 50
+logging_steps: 5
+rollout_is: token
+rollout_is_threshold: 2.0
+
+max_prompt_length: 2048
+max_completion_length: 4096
+val_max_completion_length: 38912
+actor_max_token_len_per_gpu: 40960
+temperature: 1.0
+top_p: 0.95
+top_k_sampling: 20
+student_enable_thinking: true
+val_enable_thinking: true
+val_do_sample: true
+val_n: 12
+val_temperature: 0.6
+val_top_p: 0.95
+val_top_k: 20
+val_batch_size: 16
+teacher_enable_thinking: true
+
+privileged_text_mode: solution_answer
+
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+
+# Keep the current 4B OPSD sparse top-k + tail objective for a controlled comparison.
+beta: 0.0
+jsd_token_clip: 0.06
+full_logit_distill: true
+distill_add_tail: true
+top_k_distill: 100
+teacher_mode: fixed
+
+output_dir: /scratch/project_462001383/yifu/projects/MTA-OPSD/outputs/math_deepmath/Qwen3-4B/paint
+data_dir: /scratch/project_462001383/yifu/resource/datasets 
+train_dataset: deepmath_filtered_level6_8
+val_dataset: amc23,aime24,aime25
+use_swanlab: true
+use_wandb: true
+project_name: qwen3_4b
+experiment_name: paint
+val_before_train: true
+
+opsd_rollout_filter: all
+
+# PAINT overlap-adaptive partial solution. The existing prefix crop retains
+# the reference prefix and hides a character-level suffix, matching M_tail.
+paint_enabled: true
+paint_rho_wrong: 0.30
+paint_rho_correct: 0.40
+pi_beta: 1.0  # ignored when paint_enabled=true; retained for OPSD config compatibility
+pi_crop_mode: prefix
+pi_crop_seed: 42
+pi_expose_answer: true
+pi_multi_teacher: false
+pi_teacher_specs: ""
+
+# Sparse teacher-energy interpolation on per-response top H_teacher/H_student positions.
+paint_interp_strength: 0.03
+paint_top_fraction: 0.03
+
+multi_teacher_aggregation: teacher_mean
+entropy_router_high_ratio: 0.2 # not important when pi_multi_teacher=false
+entropy_router_fixed_teacher_type: true
+student_entropy_threshold: null
+student_entropy_filter_ratio: null
+student_entropy_filter_high: false
+distance_filter_ratio: null
+distance_filter_high: false
+soft_or_filter_enabled: false
+soft_or_filter_ratio: 0.8
+
+n_gpus_per_node: 4

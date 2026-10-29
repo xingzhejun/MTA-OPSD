@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+
+# Local data, checkpoints, logs
+/data/
+/outputs/
+/checkpoints/
+/swanlog/
+/wandb/
+*.log
+/*logs*/
+
+# Local env / tooling
+.env
+.venv/
+.idea/
+.vscode/
+
+# OS
+.DS_Store

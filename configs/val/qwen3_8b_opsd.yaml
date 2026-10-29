@@ -1,0 +1,77 @@
+method: opsd # not important
+model_path: Qwen/Qwen3-8B
+use_lora: false
+
+# Checkpoint selection and output layout used by scripts/val/validate_checkpoints.py.
+checkpoint_dir: /scratch/project_462001383/yifu/projects/MTA-OPSD/outputs/math_deepmath/Qwen3-8B/opsd/20260905.032821
+checkpoint_steps: all
+validation_output_dir: validation
+skip_completed: true
+
+# Direct loading preserves the original four-way FSDP layout.  When enabled,
+# each actor checkpoint is first converted to a normal Hugging Face directory.
+merge_checkpoint: false
+merge_eval_gpus: 1
+merged_model_dir: merged_hf
+
+data_dir: /scratch/project_462001383/yifu/resource/datasets
+train_dataset: deepmath_filtered_level7_10
+val_dataset: amc23,aime24,aime25
+max_prompt_length: 2048
+max_completion_length: 38912
+val_max_completion_length: 38912
+val_enable_thinking: true
+val_do_sample: true
+val_n: 12
+val_temperature: 0.6
+val_top_p: 0.95
+val_top_k: 20
+val_batch_size: 16
+thinking_system_prompt: false
+
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+n_gpus_per_node: 4 # not important
+
+use_custom_reward_function: true
+custom_reward_function_path: src/verl_reward.py
+custom_reward_function_name: compute_score
+reward_manager_name: null
+
+# These fields are required by the shared launcher but do not affect val_only.
+per_device_batch_size: 1
+group_size: 1
+# The legacy worker normalizes this global value across four DP ranks; 16
+# becomes 4 per rank and satisfies ppo_micro_batch_size_per_gpu=4.
+ppo_mini_batch_size: 16
+learning_rate: 1.0e-6
+num_epochs: 1
+# verl constructs and validates the train dataloader even in val_only mode.
+# Keep enough rows for at least one drop_last training batch.
+max_train_samples: 16
+save_steps: -1
+eval_steps: -1
+max_grad_norm: 0.1
+warmup_steps: 0
+weight_decay: 0.0
+actor_max_token_len_per_gpu: 20480
+student_enable_thinking: true
+temperature: 1.0
+top_p: 0.95
+top_k_sampling: 20
+project_name: qwen3_8b
+experiment_name: checkpoint-validation
+use_swanlab: true
+val_before_train: true
+use_legacy_worker_impl: enable
+
+# Keep the original OPSD launcher shape so its dataset/chat-template patches are
+# active during validation. These loss settings are initialized but never used.
+beta: 0.0
+jsd_token_clip: 0.05
+full_logit_distill: true
+distill_add_tail: true
+top_k_distill: 100
+teacher_mode: fixed
+privileged_text_mode: solution_answer
+teacher_enable_thinking: true
