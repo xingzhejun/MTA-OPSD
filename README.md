@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Every Token Needs Its Own Teacher: Multi-teacher Adaptive On-Polic Self-distillation</h1>
-    <p>We introduce <strong>MTA-OPSD</strong>, the first the first token-level adaptive OPSD method.</p>
+    <p>We introduce <strong>MTA-OPSD</strong>, the first token-level adaptive OPSD method.</p>
 </div>
 
 
