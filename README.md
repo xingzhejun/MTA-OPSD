@@ -10,6 +10,7 @@
 
 **Updates:**
 
+* 30-10-2026: We released [our paper](https://arxiv.org/abs/2610.40574)
 * 29-10-2026: We released MTA-OPSD code.
 
 <div align="center">
